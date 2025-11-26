@@ -1,10 +1,40 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElButton, ElSpace, ElSelect, ElOption, ElInputNumber, ElColorPicker } from 'element-plus'
 import { Fold, Expand, Plus, Delete, DocumentCopy } from '@element-plus/icons-vue'
 import MemeList from './components/MemeList.vue'
 import CanvasEditor from './components/CanvasEditor.vue'
 import ExportPanel from './components/ExportPanel.vue'
+
+const isVerified = ref(false)
+const authQuestion = ref({ q: '', a: '' })
+const authAnswer = ref('')
+
+const questions = [
+  { q: '高雅', a: '人士' },
+  { q: '恶俗', a: '企鹅' }
+]
+
+onMounted(() => {
+  const verified = localStorage.getItem('meme-auth-verified')
+  if (verified) {
+    isVerified.value = true
+  } else {
+    const idx = Math.floor(Math.random() * questions.length)
+    authQuestion.value = questions[idx]
+  }
+})
+
+const checkAuth = () => {
+  if (authAnswer.value.trim() === authQuestion.value.a) {
+    isVerified.value = true
+    localStorage.setItem('meme-auth-verified', 'true')
+    ElMessage.success('验证通过')
+  } else {
+    ElMessage.error('回答错误')
+    authAnswer.value = ''
+  }
+}
 
 const selectedImage = ref(null)
 const editorRef = ref(null)
@@ -92,8 +122,30 @@ const addText = () => {
 </script>
 
 <template>
-  <div class="app-container">
+  <div v-if="!isVerified" class="auth-container">
+    <div class="auth-box">
+      <h2>🔒 访问验证</h2>
+      <p>为了防止滥用，请完成以下填空：</p>
+      <div class="auth-question">
+        <span>{{ authQuestion.q }}</span>
+        <input 
+          v-model="authAnswer" 
+          class="auth-input"
+          placeholder="" 
+          @keyup.enter="checkAuth"
+        />
+      </div>
+      <!-- 去掉提示内容 
+      <p class="hint">提示：{{ authQuestion.q }}"{{ authQuestion.q === '高雅' ? '人士' : '企鹅' }}" (""内的内容即为正确答案)</p>
+      -->
+      <el-button type="primary" size="large" @click="checkAuth" style="margin-top: 20px; width: 100%">进入网站</el-button>
+    </div>
+  </div>
+
+  <div v-else class="app-container">
+
     <!-- 可折叠标题栏 -->
+    <!--标题栏也去掉了 有点丑 后面也不要再改了
     <header class="header" :class="{ collapsed: headerCollapsed }" :style="{ height: headerHeight }">
       <div class="header-content">
         <div class="title-section">
@@ -103,11 +155,12 @@ const addText = () => {
         <button class="collapse-btn" @click="toggleHeader" :title="headerCollapsed ? 'Show' : 'Hide'">
           <component :is="headerCollapsed ? Expand : Fold" />
         </button>
-      </div>
-      <div class="drag-handle" @mousedown="startDragHeader">
+        </div>
+        <div class="drag-handle" @mousedown="startDragHeader">
         <div class="handle-bar"></div>
       </div>
     </header>
+    -->
 
     <!-- 主要内容区域 -->
     <div class="main-wrapper">
@@ -238,6 +291,58 @@ const addText = () => {
   box-sizing: border-box;
 }
 
+/* 验证页面样式 */
+.auth-container {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f0f2f5;
+}
+
+.auth-box {
+  background: white;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+  text-align: center;
+  width: 400px;
+}
+
+.auth-question {
+  font-size: 24px;
+  margin: 30px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-weight: bold;
+  color: #333;
+}
+
+.auth-input {
+  border: none;
+  border-bottom: 2px solid #ddd;
+  width: 100px;
+  font-size: 24px;
+  text-align: center;
+  outline: none;
+  padding: 5px;
+  transition: border-color 0.3s;
+}
+
+.auth-input:focus {
+  border-color: #409eff;
+}
+
+.hint {
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 20px;
+}
+
+/* 应用容器 */
 .app-container {
   display: flex;
   flex-direction: column;
