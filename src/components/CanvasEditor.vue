@@ -10,7 +10,7 @@ const props = defineProps({
   },
   fontSize: {
     type: Number,
-    default: 24
+    default: 48
   },
   fontFamily: {
     type: String,
