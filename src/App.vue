@@ -177,6 +177,7 @@ const addText = () => {
           :text-color="textColor"
           :font-size="fontSize"
           :font-family="fontFamily"
+          @mode-change="(val) => textToolActive = val"
         />
       </section>
 
@@ -218,9 +219,9 @@ const addText = () => {
           :type="textToolActive ? 'primary' : 'default'"
           size="small" 
           @click="toggleTextTool"
-          title="激活文字工具"
+          :title="textToolActive ? '点击切换到元素操作模式' : '点击切换到文字输入模式'"
         >
-          📝 文字
+          {{ textToolActive ? '📝 插入文字模式' : '👆 元素操作模式' }}
         </el-button>
 
         <!-- 字体大小 -->
